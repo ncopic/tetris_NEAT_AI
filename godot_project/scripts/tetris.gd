@@ -68,14 +68,14 @@ var fall_timer: float = 0
 var fall_interval: float = 1.0
 var fast_fall_multiplier: float = 10.0
 
-var current_tetromino_type: Array
-var next_tetromino_type: Array
-var rotation_index: int = 0
 var active_tetromino: Array = []
+var current_tetromino_type: Array
+var rotation_index: int = 0
 
 var tile_id: int = 0
 var piece_atlas: Vector2i 	#when we imported the tetrominoes.png as a TileSet, this is how we reference what color we want from it
 							#tetrominoes.png has to be imported as TileSet on each TileMapLayer. Otherwise even if you call it, sprites won't appear for that layer.
+var next_tetromino_type: Array
 var next_piece_atlas: Vector2i
 
 @onready var board_layer: TileMapLayer = $Board
@@ -89,8 +89,10 @@ func _ready() -> void:
 func start_new_game() -> void:
 	current_tetromino_type = choose_tetromino()
 	piece_atlas = Vector2i(all_tetrominoes.find(current_tetromino_type), 0)
+	next_tetromino_type = choose_tetromino()
+	next_piece_atlas = Vector2i(all_tetrominoes.find(next_tetromino_type), 0)
 	initialize_tetromino()
-	pass
+	return
 
 #called every frame update - used for continuously updating values
 func _physics_process(delta: float) -> void:
@@ -117,16 +119,17 @@ func _physics_process(delta: float) -> void:
 		fall_timer = 0
 	pass
 
-
-
 func initialize_tetromino() -> void:
 	current_position = START_POSITION
 	active_tetromino = current_tetromino_type[rotation_index]
 	render_tetromino(active_tetromino, current_position, piece_atlas)
-	
+	render_tetromino(next_tetromino_type[0], Vector2i(15,2), next_piece_atlas)
+	return
+		
 func render_tetromino(tetromino: Array, position: Vector2i, atlas: Vector2i) -> void:
 	for block in tetromino:
 		active_area_layer.set_cell(position + block, tile_id, atlas)
+	return
 
 func choose_tetromino() -> Array:
 	var selected_tetromino: Array
@@ -146,6 +149,7 @@ func choose_tetromino() -> Array:
 func clear_tetromino() -> void:
 	for block in active_tetromino:
 		active_area_layer.erase_cell(current_position + block)
+	return
 
 func rotate_tetromino() -> void:
 	if is_valid_rotation():
@@ -153,17 +157,66 @@ func rotate_tetromino() -> void:
 		rotation_index = (rotation_index - 1) % 4
 		active_tetromino = current_tetromino_type[rotation_index]
 		render_tetromino(active_tetromino, current_position, piece_atlas)
+	return
 
 func move_tetromino(direction: Vector2i) -> void:
 	if is_valid_move(direction):
 		clear_tetromino()
 		current_position += direction
 		render_tetromino(active_tetromino, current_position, piece_atlas)
+	else:
+		if direction == Vector2i.DOWN:
+			land_tetromino()
+			check_rows()
+			current_tetromino_type	= next_tetromino_type
+			piece_atlas = next_piece_atlas
+			next_tetromino_type = choose_tetromino()
+			next_piece_atlas = Vector2i(all_tetrominoes.find(next_tetromino_type), 0)
+			clear_next_tetromino_preview()
+			initialize_tetromino()
+	return
+
+func land_tetromino() -> void:
+	for ii in active_tetromino:
+		active_area_layer.erase_cell(current_position + ii)
+		board_layer.set_cell(current_position + ii, tile_id, piece_atlas)
+	return
+
+func clear_next_tetromino_preview() -> void:
+	for ii in range(14,19):
+		for jj in range(2,6):
+			active_area_layer.erase_cell(Vector2i(ii,jj))
+
+func check_rows() -> void:
+	var row: int = ROWS
+	while row > 0:
+		var cells_filled: int = 0
+		for ii in range(COLS):
+			if not is_within_bounds(Vector2i(ii + 1, row)):
+				cells_filled += 1
+		if cells_filled == COLS:
+			shift_rows(row)
+		else:
+			row -= 1
+	return
+
+func shift_rows(row) -> void:
+	var atlas: Vector2i
+	for ii in range(row, 1, -1):
+		for jj in range(COLS):
+			atlas = board_layer.get_cell_atlas_coords(Vector2i(jj + 1, ii - 1))
+			if atlas == Vector2i(-1,-1):
+				board_layer.erase_cell(Vector2i(jj + 1, ii))
+			else:
+				board_layer.set_cell(Vector2i(jj + 1, ii), tile_id, atlas)
 	return
 
 func is_valid_move(new_position: Vector2i) -> bool:
 	for block in active_tetromino:
 		if not is_within_bounds(current_position + block + new_position):
+			#stack more "if" statemetns in here to handle SRS "kick" before returning false
+			#would still have to figure out how to update where to draw the sprite on screen
+			#since this function has return type: bool
 			return false
 	return true
 
