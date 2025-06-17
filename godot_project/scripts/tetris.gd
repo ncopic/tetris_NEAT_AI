@@ -59,6 +59,7 @@ var all_tetrominoes: Array = tetrominoes.duplicate()
 #our tetris board is 10x20 for the area in which the pieces can exist
 const COLS: int = 10
 const ROWS: int = 20
+var is_game_running: bool = true
 
 const START_POSITION: Vector2i = Vector2i(5,1) #I think this is used as the spawn location when a new piece is put at the top of the screen
 const movement_directon: Array[Vector2i] = [Vector2i.LEFT, Vector2i.DOWN, Vector2i.RIGHT]
@@ -71,6 +72,17 @@ var fast_fall_multiplier: float = 10.0
 var active_tetromino: Array = []
 var current_tetromino_type: Array
 var rotation_index: int = 0
+
+var score: int
+const CLEAR_REWARD_1L: int = 40
+const CLEAR_REWARD_2L: int = 100
+const CLEAR_REWARD_3L: int = 300
+const CLEAR_REWARD_4L: int = 1200
+
+var line_clear_1: int = 0
+var line_clear_2: int = 0
+var line_clear_3: int = 0
+var line_clear_4: int = 0
 
 var tile_id: int = 0
 var piece_atlas: Vector2i 	#when we imported the tetrominoes.png as a TileSet, this is how we reference what color we want from it
@@ -87,6 +99,20 @@ func _ready() -> void:
 	pass
 
 func start_new_game() -> void:
+	$GameHUD/StartGameButton.visible = false
+	$"GameHUD/Label-GameOver".visible = false
+	is_game_running = true
+	
+	score = 0
+	line_clear_1 = 0
+	line_clear_2 = 0
+	line_clear_3 = 0
+	line_clear_4 = 0
+	update_HUD(0)
+	
+	clear_tetromino()
+	clear_board()
+	clear_next_tetromino_preview()
 	current_tetromino_type = choose_tetromino()
 	piece_atlas = Vector2i(all_tetrominoes.find(current_tetromino_type), 0)
 	next_tetromino_type = choose_tetromino()
@@ -96,34 +122,36 @@ func start_new_game() -> void:
 
 #called every frame update - used for continuously updating values
 func _physics_process(delta: float) -> void:
-	var move_direction = Vector2i.ZERO
-	
-	if Input.is_action_just_pressed("ui_left"):
-		move_direction = Vector2i.LEFT
-	elif Input.is_action_just_pressed("ui_right"):
-		move_direction = Vector2i.RIGHT
-	
-	if move_direction != Vector2i.ZERO:
-		move_tetromino(move_direction)
-	
-	if Input.is_action_just_pressed("ui_up"):
-		rotate_tetromino()
-	
-	var current_fall_interval = fall_interval
-	if Input.is_action_pressed("ui_down"):
-		current_fall_interval /= fast_fall_multiplier
-	
-	fall_timer += delta
-	if fall_timer >= current_fall_interval:
-		move_tetromino(Vector2i.DOWN)
-		fall_timer = 0
+	if is_game_running:
+		var move_direction = Vector2i.ZERO
+		
+		if Input.is_action_just_pressed("ui_left"):
+			move_direction = Vector2i.LEFT
+		elif Input.is_action_just_pressed("ui_right"):
+			move_direction = Vector2i.RIGHT
+		
+		if move_direction != Vector2i.ZERO:
+			move_tetromino(move_direction)
+		
+		if Input.is_action_just_pressed("ui_up"):
+			rotate_tetromino()
+		
+		var current_fall_interval = fall_interval
+		if Input.is_action_pressed("ui_down"):
+			current_fall_interval /= fast_fall_multiplier
+		
+		fall_timer += delta
+		if fall_timer >= current_fall_interval:
+			move_tetromino(Vector2i.DOWN)
+			fall_timer = 0
 	pass
 
 func initialize_tetromino() -> void:
 	current_position = START_POSITION
+	rotation_index = 0 #in tetris, all pieces spawn in the same orientation, every time
 	active_tetromino = current_tetromino_type[rotation_index]
 	render_tetromino(active_tetromino, current_position, piece_atlas)
-	render_tetromino(next_tetromino_type[0], Vector2i(15,2), next_piece_atlas)
+	render_tetromino(next_tetromino_type[0], Vector2i(14,3), next_piece_atlas)
 	return
 		
 func render_tetromino(tetromino: Array, position: Vector2i, atlas: Vector2i) -> void:
@@ -174,6 +202,7 @@ func move_tetromino(direction: Vector2i) -> void:
 			next_piece_atlas = Vector2i(all_tetrominoes.find(next_tetromino_type), 0)
 			clear_next_tetromino_preview()
 			initialize_tetromino()
+			is_game_over()
 	return
 
 func land_tetromino() -> void:
@@ -183,12 +212,13 @@ func land_tetromino() -> void:
 	return
 
 func clear_next_tetromino_preview() -> void:
-	for ii in range(14,19):
-		for jj in range(2,6):
+	for ii in range(13,18): #14,3
+		for jj in range(3,7): #15,2 ->15,6
 			active_area_layer.erase_cell(Vector2i(ii,jj))
 
 func check_rows() -> void:
 	var row: int = ROWS
+	var rows_cleared: int = 0
 	while row > 0:
 		var cells_filled: int = 0
 		for ii in range(COLS):
@@ -196,8 +226,27 @@ func check_rows() -> void:
 				cells_filled += 1
 		if cells_filled == COLS:
 			shift_rows(row)
+			rows_cleared += 1
 		else:
 			row -= 1
+	update_HUD(rows_cleared)
+	return
+	
+func update_HUD(rows_cleared) -> void:
+	if rows_cleared == 1:
+		score += CLEAR_REWARD_1L
+		line_clear_1 += 1
+	elif rows_cleared == 2:
+		score += CLEAR_REWARD_2L
+		line_clear_2 += 1
+	elif rows_cleared == 3:
+		score += CLEAR_REWARD_3L
+		line_clear_3 += 1
+	elif rows_cleared == 4:
+		score += CLEAR_REWARD_4L
+		line_clear_4 += 1
+	$"GameHUD/Label-LineClears".text = "Line Clears: \n1L: " + str(line_clear_1) + "\n2L: " + str(line_clear_2) + "\n3L: " + str(line_clear_3) + "\n4L: " + str(line_clear_4)
+	$"GameHUD/Label-Score".text = "Score: \n" + str(score)
 	return
 
 func shift_rows(row) -> void:
@@ -209,6 +258,12 @@ func shift_rows(row) -> void:
 				board_layer.erase_cell(Vector2i(jj + 1, ii))
 			else:
 				board_layer.set_cell(Vector2i(jj + 1, ii), tile_id, atlas)
+	return
+
+func clear_board() -> void:
+	for ii in range(ROWS):
+		for jj in range(COLS):
+			board_layer.erase_cell(Vector2i(jj + 1, ii + 1))
 	return
 
 func is_valid_move(new_position: Vector2i) -> bool:
@@ -235,3 +290,14 @@ func is_within_bounds(pos: Vector2i) -> bool:
 	
 	var tile_id = board_layer.get_cell_source_id(pos)
 	return tile_id == -1
+
+func is_game_over() -> void:
+	for ii in active_tetromino:
+		if not is_within_bounds(ii + current_position):
+			land_tetromino()
+			$"GameHUD/Label-GameOver".visible = true
+			$GameHUD/StartGameButton.visible = true
+			$GameHUD/StartGameButton.pressed.connect(start_new_game)
+			is_game_running = false
+	return
+	

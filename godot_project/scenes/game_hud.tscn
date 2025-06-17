@@ -1,0 +1,85 @@
+[gd_scene load_steps=3 format=3 uid="uid://davu8t221wfpk"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8tn2b"]
+bg_color = Color(0.290448, 0.636516, 0.745589, 1)
+draw_center = false
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.955963, 0.955963, 0.955963, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8t4dp"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.36347, 0.943158, 0.285851, 1)
+
+[node name="GameHUD" type="CanvasLayer"]
+
+[node name="Label-Next" type="Label" parent="."]
+offset_left = 456.0
+offset_top = 1.0
+offset_right = 539.0
+offset_bottom = 51.0
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 36
+text = "Next"
+
+[node name="Panel-Next" type="Panel" parent="."]
+custom_minimum_size = Vector2(150, 150)
+offset_left = 430.0
+offset_top = 50.0
+offset_right = 580.0
+offset_bottom = 200.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_8tn2b")
+
+[node name="Label-Score" type="Label" parent="."]
+offset_left = 430.0
+offset_top = 510.0
+offset_right = 536.0
+offset_bottom = 560.0
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 36
+text = "Score:"
+
+[node name="Panel-Score" type="Panel" parent="."]
+offset_left = 430.0
+offset_top = 561.0
+offset_right = 580.0
+offset_bottom = 611.0
+
+[node name="Label-LineClears" type="Label" parent="."]
+offset_left = 430.0
+offset_top = 234.0
+offset_right = 588.0
+offset_bottom = 284.0
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 28
+text = "Line Clears"
+
+[node name="Pannel-LineClears" type="Panel" parent="."]
+offset_left = 430.0
+offset_top = 273.0
+offset_right = 580.0
+offset_bottom = 498.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_8t4dp")
+
+[node name="Label-GameOver" type="Label" parent="."]
+offset_left = 99.0
+offset_top = 333.0
+offset_right = 294.0
+offset_bottom = 383.0
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 36
+text = "Game Over"
+
+[node name="StartGameButton" type="Button" parent="."]
+offset_left = 70.0
+offset_top = 390.0
+offset_right = 312.0
+offset_bottom = 435.0
+text = "New Game
+"

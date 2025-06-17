@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=4 uid="uid://dkgy2pht6g6yl"]
+[gd_scene load_steps=8 format=4 uid="uid://dkgy2pht6g6yl"]
 
-[ext_resource type="Script" uid="uid://cs1nuyjd3tgqn" path="res://scripts/tetris.gd" id="1_rxr4a"]
-[ext_resource type="Texture2D" uid="uid://cwbh5rbx6hhx7" path="res://assets/tetrominoes.png" id="2_8lihd"]
+[ext_resource type="Script" uid="uid://cs1nuyjd3tgqn" path="res://scripts/tetris.gd" id="1_3k1uj"]
+[ext_resource type="Texture2D" uid="uid://cwbh5rbx6hhx7" path="res://assets/tetrominoes.png" id="2_ptrkf"]
+[ext_resource type="PackedScene" uid="uid://davu8t221wfpk" path="res://scenes/game_hud.tscn" id="3_j50mw"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_i0mbr"]
-texture = ExtResource("2_8lihd")
+texture = ExtResource("2_ptrkf")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
 1:0/0 = 0
@@ -20,7 +21,7 @@ tile_size = Vector2i(32, 32)
 sources/0 = SubResource("TileSetAtlasSource_i0mbr")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_rxr4a"]
-texture = ExtResource("2_8lihd")
+texture = ExtResource("2_ptrkf")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
 1:0/0 = 0
@@ -36,7 +37,9 @@ tile_size = Vector2i(32, 32)
 sources/0 = SubResource("TileSetAtlasSource_rxr4a")
 
 [node name="Tetris" type="Node2D"]
-script = ExtResource("1_rxr4a")
+script = ExtResource("1_3k1uj")
+
+[node name="GameHUD" parent="." instance=ExtResource("3_j50mw")]
 
 [node name="Board" type="TileMapLayer" parent="."]
 tile_map_data = PackedByteArray("AAAAAAAAAAAHAAAAAAAAAAEAAAAHAAAAAAAAAAIAAAAHAAAAAAAAAAMAAAAHAAAAAAAAAAQAAAAHAAAAAAAAAAUAAAAHAAAAAAAAAAYAAAAHAAAAAAAAAAcAAAAHAAAAAAAAAAgAAAAHAAAAAAAAAAkAAAAHAAAAAAAAAAoAAAAHAAAAAAAAAAsAAAAHAAAAAAAAAAwAAAAHAAAAAAAAAA0AAAAHAAAAAAAAAA4AAAAHAAAAAAAAAA8AAAAHAAAAAAAAABAAAAAHAAAAAAAAABEAAAAHAAAAAAAAABIAAAAHAAAAAAAAABMAAAAHAAAAAAAAABQAAAAHAAAAAAAAABUAAAAHAAAAAAABAAAAAAAHAAAAAAACAAAAAAAHAAAAAAADAAAAAAAHAAAAAAAEAAAAAAAHAAAAAAAFAAAAAAAHAAAAAAAGAAAAAAAHAAAAAAAHAAAAAAAHAAAAAAAIAAAAAAAHAAAAAAAJAAAAAAAHAAAAAAAKAAAAAAAHAAAAAAALAAAAAAAHAAAAAAALAAEAAAAHAAAAAAALAAIAAAAHAAAAAAALAAMAAAAHAAAAAAALAAQAAAAHAAAAAAALAAUAAAAHAAAAAAALAAYAAAAHAAAAAAALAAcAAAAHAAAAAAALAAgAAAAHAAAAAAALAAkAAAAHAAAAAAALAA4AAAAHAAAAAAALAA8AAAAHAAAAAAALAAoAAAAHAAAAAAALAAsAAAAHAAAAAAALAAwAAAAHAAAAAAALAA0AAAAHAAAAAAALABAAAAAHAAAAAAALABEAAAAHAAAAAAALABIAAAAHAAAAAAALABMAAAAHAAAAAAALABQAAAAHAAAAAAALABUAAAAHAAAAAAAKABUAAAAHAAAAAAAJABUAAAAHAAAAAAAIABUAAAAHAAAAAAAHABUAAAAHAAAAAAAGABUAAAAHAAAAAAAFABUAAAAHAAAAAAAEABUAAAAHAAAAAAADABUAAAAHAAAAAAACABUAAAAHAAAAAAABABUAAAAHAAAAAAA=")
